@@ -1,0 +1,1046 @@
+openapi: 3.0.3
+
+info:
+  title: Fooody REST API
+  description: API RESTful per la gestione delle ordinazioni e delle consegne a domicilio dell'attività Fooody.
+  version: 1.0.0
+  contact:
+    name: Maikol Gaparroni
+    email: maikol.gasparroni@student.univaq.it
+
+servers:
+  - url: http://localhost:8080/Fooody/api
+    description: Server locale (Apache Tomcat)
+
+paths:
+  # Specifica di tutti gli endpoint per le operazioni
+  #-------------------
+  # Autenticazione
+  #-------------------
+  /auth/login:
+    post:
+      summary: Effettua il login
+      description: Permette agli utenti di autenticarsi e ottenere un token JWT per accedere alle risorse protette.
+      tags:
+        - Autenticazione
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login effettuato con successo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Credenziali non valide o utente non trovato.
+          
+  /auth/register:
+    post:
+      summary: Registra un nuovo utente
+      description: Crea un nuovo account cliente nel sistema.
+      tags:
+        - Autenticazione
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Utente'
+      responses:
+        '201':
+          description: Registrazione completata con successo.
+        '400':
+          description: Dati obbligatori mancanti.
+        '409':
+          description: Impossibile creare l'utente. L'email potrebbe essere già in uso.
+
+  #-------------------
+  # Catalogo Prodotti
+  #-------------------
+  /prodotti:
+    get:
+      summary: Elenco di tutti i prodotti e ricerca con filtri.
+      description: Restituisce una lista di tutti i prodotti disponibili nel sistema. Supporta la ricerca con filtri per nome, fascia di prezzo e categoria.
+      tags: [Catalogo]
+      parameters:
+        - in: query
+          name: categoria
+          schema:
+            type: string
+          description: Filtro per categoria del prodotto (es. "Pizza", "Bevande").
+        - in: query
+          name: nome
+          schema:
+            type: string
+          description: Filtro per nome del prodotto.
+        - in: query
+          name: prezzoMin
+          schema:
+            type: number
+            format: float
+          description: Filtro per prezzo minimo del prodotto.
+        - in: query
+          name: prezzoMax
+          schema:
+            type: number
+            format: float
+          description: Filtro per prezzo massimo del prodotto.
+      responses:
+        '200':
+          description: Elenco dei prodotti restituito con successo.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Prodotto'
+    post:
+      security:
+        - bearerAuth: []
+      summary: Aggiunge un nuovo prodotto al menu
+      tags: [Catalogo]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Prodotto'
+      responses:
+        '201':
+          description: Prodotto aggiunto con successo.
+        '403':
+          description: Accesso negato. Solo il proprietario può effettuare questa operazione.
+        '500':
+          description: Errore interno del server.
+
+  /prodotti/{id}:
+    put:
+      security:
+        - bearerAuth: []
+      summary: Aggiorna un prodotto esistente
+      tags: [Catalogo]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Prodotto'
+      responses:
+        '200':
+          description: Prodotto aggiornato con successo.
+        '403':
+          description: Accesso negato.
+        '500':
+          description: Errore interno del server.
+
+  /prodotti/{idProdotto}/caratteristiche:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Assegna una caratteristica esistente a un prodotto.
+      tags: [Catalogo]
+      parameters:
+        - in: path
+          name: idProdotto
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Caratteristica'
+      responses:
+        '201':
+          description: Caratteristica assegnata con successo.
+        '400':
+          description: ID caratteristica mancante.
+        '403':
+          description: Accesso negato.
+        '500':
+          description: Errore durante l'assegnazione.
+
+  /prodotti/{idProdotto}/caratteristiche/{idCaratteristica}:
+    delete:
+      security:
+        - bearerAuth: [] # Questo endpoint richiede autenticazione con token JWT
+      summary: Rimuove una caratteristica da un prodotto.
+      description: Rimuove una caratteristica specifica da un prodotto esistente.
+      tags: [Catalogo]
+      parameters:
+        - in: path
+          name: idProdotto
+          required: true
+          schema:
+            type: integer
+          description: ID del prodotto da cui rimuovere la caratteristica.
+        - in: path
+          name: idCaratteristica
+          required: true
+          schema:
+            type: integer
+          description: ID della caratteristica da rimuovere dal prodotto.
+      responses:
+        '204':
+          description: Caratteristica rimossa con successo.
+        '404':
+          description: Prodotto o caratteristica non trovata.
+          
+  /prodotti/{idProdotto}/ingredienti:
+    get:
+      summary: Elenco ingredienti di un prodotto.
+      description: Restituisce la lista degli ingredienti associati a un prodotto specifico. Se si utilizza un token di Proprietario o di Personale, vengono restituite anche le quantità per ciascun ingrediente.
+      tags: [Catalogo]
+      parameters:
+        - in: path
+          name: idProdotto
+          required: true
+          schema:
+            type: integer
+          description: ID del prodotto di cui ottenere gli ingredienti.
+      responses:
+        '200':
+          description: Elenco degli ingredienti restituito con successo.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ingrediente'
+  /prodotti/categorie:
+    get:
+      summary: Ottiene l'elenco delle categorie uniche
+      description: Restituisce una lista di tutte le categorie di prodotti presenti nel menu.
+      tags: [Catalogo]
+      responses:
+        '200':
+          description: Elenco delle categorie restituito con successo.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  example: ["Pizza", "Bevande", "Dessert"]
+  #-------------------
+  # Ingredienti
+  #-------------------
+  /ingredienti:
+    get:
+      summary: Elenco di tutti gli ingredienti
+      description: Restituisce l'elenco globale degli ingredienti disponibili nel sistema.
+      tags: [Ingredienti]
+      responses:
+        '200':
+          description: Elenco degli ingredienti
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ingrediente'
+    post:
+      security:
+        - bearerAuth: []
+      summary: Crea un nuovo ingrediente
+      description: Aggiunge un nuovo ingrediente al dizionario globale.
+      tags: [Ingredienti]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ingrediente'
+      responses:
+        '201':
+          description: Ingrediente creato con successo.
+        '403':
+          description: Accesso negato. Solo il proprietario può effettuare questa operazione.
+        '500':
+          description: Errore interno del server.
+
+  /ingredienti/{id}:
+    delete:
+      security:
+        - bearerAuth: []
+      summary: Elimina un ingrediente
+      description: Rimuove un ingrediente dal dizionario globale.
+      tags: [Ingredienti]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Ingrediente eliminato con successo.
+        '403':
+          description: Accesso negato.
+        '409':
+          description: Conflitto - Ingrediente in uso in alcune ricette.
+  #-------------------
+  # Caratteristiche
+  #-------------------
+  /caratteristiche:
+    get:
+      summary: Elenco di tutte le caratteristiche
+      tags: [Caratteristiche]
+      responses:
+        '200':
+          description: Lista delle caratteristiche
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Caratteristica'
+    post:
+      security:
+        - bearerAuth: []
+      summary: Crea una nuova caratteristica (opzione menu)
+      tags: [Caratteristiche]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Caratteristica'
+      responses:
+        '201':
+          description: Caratteristica creata con successo.
+        '403':
+          description: Accesso negato.
+        '500':
+          description: Errore interno del server.
+
+  /caratteristiche/{idCaratteristica}:
+    put:
+      security:
+        - bearerAuth: []
+      summary: Aggiorna una caratteristica esistente
+      tags: [Caratteristiche]
+      parameters:
+        - in: path
+          name: idCaratteristica
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Caratteristica'
+      responses:
+        '200':
+          description: Caratteristica aggiornata con successo.
+        '403':
+          description: Accesso negato.
+    delete:
+      security:
+        - bearerAuth: []
+      summary: Elimina una caratteristica
+      tags: [Caratteristiche]
+      parameters:
+        - in: path
+          name: idCaratteristica
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Caratteristica eliminata con successo.
+        '403':
+          description: Accesso negato.
+        '409':
+          description: Conflitto - Caratteristica in uso.
+
+  /caratteristiche/gruppi:
+    get:
+      summary: Elenco di tutti i gruppi di mutua esclusione
+      tags: [Caratteristiche]
+      responses:
+        '200':
+          description: Lista dei gruppi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GruppoMutuaEsclusione'
+    post:
+      security:
+        - bearerAuth: []
+      summary: Crea un nuovo gruppo di mutua esclusione
+      tags: [Caratteristiche]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GruppoMutuaEsclusione'
+      responses:
+        '201':
+          description: Gruppo creato con successo.
+        '403':
+          description: Accesso negato.
+        '500':
+          description: Errore interno del server.
+
+  /caratteristiche/gruppi/{idGmc}:
+    put:
+      security:
+        - bearerAuth: []
+      summary: Aggiorna un gruppo esistente
+      tags: [Caratteristiche]
+      parameters:
+        - in: path
+          name: idGmc
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GruppoMutuaEsclusione'
+      responses:
+        '200':
+          description: Gruppo aggiornato con successo.
+        '403':
+          description: Accesso negato.
+    delete:
+      security:
+        - bearerAuth: []
+      summary: Elimina un gruppo di mutua esclusione
+      tags: [Caratteristiche]
+      parameters:
+        - in: path
+          name: idGmc
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Gruppo eliminato con successo.
+        '403':
+          description: Accesso negato.
+        '409':
+          description: Conflitto - Gruppo in uso da caratteristiche.
+
+  # ------------------
+  # Ordini
+  # ------------------
+  /ordini:
+    get:
+      security:
+        - bearerAuth: [] # Questo endpoint richiede autenticazione con token JWT
+      summary: Elenco ordini con filtri.
+      tags: [Ordini]
+      parameters:
+        - in: query
+          name: dataInserimento
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: stato
+          schema:
+            type: string
+            enum: ["inserito", "in preparazione", "pronto", "in consegna", "consegnato", "annullato"]
+      responses:
+        '200':
+          description: Elenco degli ordini restituito con successo.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ordine'
+    post:
+      security:
+        - bearerAuth: []
+      summary: Creazione di un nuovo ordine completo
+      description: Inserisce l'ordine intero comprensivo di prodotti e caratteristiche, ricalcolando automaticamente totale e tempistiche.
+      tags: [Ordini]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NuovoOrdineRequest'
+      responses:
+        '201':
+          description: Ordine creato con successo.
+        '400':
+          description: Impossibile creare un ordine vuoto.
+        '500':
+          description: Errore interno del server durante la creazione dell'ordine.
+
+  /ordini/{idOrdine}:
+    delete:
+      security:
+        - bearerAuth: [] # Questo endpoint richiede autenticazione con token JWT
+      summary: Annulla ordine
+      tags:
+        - Ordini
+      parameters:
+        - in: path
+          name: idOrdine
+          required: true
+          schema:
+            type: integer
+          description: ID dell'ordine da annullare.
+      responses:
+        '204':
+          description: Ordine annullato con successo.
+        '404':
+          description: Ordine non trovato.
+          
+  /ordini/{idOrdine}/dettagli:
+    post:
+      security:
+        - bearerAuth: [] # Questo endpoint richiede autenticazione con token JWT
+      summary: Insermento prodotto in ordine
+      tags:
+        - Ordini
+      parameters:
+        - in: path
+          name: idOrdine
+          required: true
+          schema:
+            type: integer
+          description: ID dell'ordine a cui aggiungere il prodotto.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NuovoDettaglioRequest'
+      responses:
+        '201':
+          description: Prodotto aggiunto all'ordine con successo.
+    get:
+      security:
+        - bearerAuth: [] # Questo endpoint richiede autenticazione con token JWT
+      summary: Elenco prodotti in un ordine
+      tags:
+        - Ordini
+      parameters:
+        - in: path
+          name: idOrdine
+          required: true
+          schema:
+            type: integer
+          description: ID dell'ordine di cui ottenere i dettagli.
+      responses:
+        '200':
+          description: Elenco dei prodotti nell'ordine restituito con successo.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DettaglioProdotto'
+                  
+  /ordini/{idOrdine}/tempo-stimato:
+    get:
+      security:
+        - bearerAuth: [] # Questo endpoint richiede autenticazione con token JWT
+      summary: Tempo stimato per la consegna.
+      tags:
+        - Ordini
+      parameters:
+        - in: path
+          name: idOrdine
+          required: true
+          schema:
+            type: integer
+          description: ID dell'ordine di cui ottenere il tempo stimato per la consegna.
+      responses:
+        '200':
+          description: Tempo stimato per la consegna restituito con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tempoStimatoMinuti:
+                    type: integer
+                    example: 30
+                  messaggio:
+                    type: string
+                    example: "Il tempo stimato per la consegna è di circa 30 minuti."
+                    
+  /ordini/{idOrdine}/prezzo-totale:
+    get:
+      security:
+        - bearerAuth: [] # Questo endpoint richiede autenticazione con token JWT
+      summary: Prezzo totale dell'ordine.
+      tags:
+        - Ordini
+      parameters:
+        - in: path
+          name: idOrdine
+          required: true
+          schema:
+            type: integer
+          description: ID dell'ordine di cui ottenere il prezzo totale.
+      responses:
+        '200':
+          description: Prezzo totale dell'ordine restituito con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  prezzoTotale:
+                    type: number
+                    format: float
+                    example: 25.50
+                  messaggio:
+                    type: string
+                    example: "Il prezzo totale dell'ordine è di 25.50 euro."
+                    
+  /ordini/{idOrdine}/stati:
+    post:
+      security:
+        - bearerAuth: [] # Questo endpoint richiede autenticazione con token JWT
+      summary: Aggiorna lo stato di un ordine
+      tags:
+        - Ordini
+      parameters:
+        - in: path
+          name: idOrdine
+          required: true
+          schema:
+            type: integer
+          description: ID dell'ordine di cui aggiornare lo stato.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nuovoStato:
+                  type: string
+                  enum: ["in preparazione", "pronto", "in consegna", "consegnato", "annullato"]
+                  example: "in preparazione"
+      responses:
+        '200':
+          description: Stato dell'ordine aggiornato con successo.
+          
+  /ordini/{idOrdine}/operatori:
+    get:
+      security:
+        - bearerAuth: [] # Questo endpoint richiede autenticazione con token JWT
+      summary: Elenco operatori coinvolti in un ordine
+      tags:
+        - Ordini
+      parameters:
+        - in: path
+          name: idOrdine
+          required: true
+          schema:
+            type: integer
+          description: ID dell'ordine di cui ottenere l'elenco degli operatori coinvolti.
+      responses:
+        '200':
+          description: Elenco degli operatori coinvolti nell'ordine restituito con successo.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nome: { type: string, example: "Mario Rossi"}
+                    cognome: { type: string, example: "Rossi"}
+
+  #-------------------
+  # Personale
+  #-------------------
+  /personale:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Ottiene l'elenco di tutto il personale
+      tags: [Personale]
+      responses:
+        '200':
+          description: Elenco del personale
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Personale'
+
+  /personale/{id}:
+    delete:
+      security:
+        - bearerAuth: []
+      summary: Licenzia (rimuove) un membro del personale
+      tags: [Personale]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Personale rimosso con successo.
+        '403':
+          description: Accesso negato.
+        '404':
+          description: Personale non trovato.
+
+  /personale/{idUtente}:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Promuove un utente esistente a membro del personale
+      tags: [Personale]
+      parameters:
+        - in: path
+          name: idUtente
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Utente promosso con successo.
+        '403':
+          description: Accesso negato.
+        '500':
+          description: Errore interno.
+
+  #-------------------
+  # Clienti e utenti
+  #-------------------
+  /clienti/{idUtente}:
+    put:
+      security:
+        - bearerAuth: []
+      summary: Aggiorna il profilo di un cliente
+      tags: [Clienti]
+      parameters:
+        - in: path
+          name: idUtente
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Utente'
+      responses:
+        '200':
+          description: Profilo aggiornato con successo.
+        '403':
+          description: Non puoi modificare il profilo di altri utenti.
+        '500':
+          description: Errore durante l'aggiornamento.
+
+  /clienti/{idUtente}/ordini:
+    get:
+      security:
+        - bearerAuth: [] # Questo endpoint richiede autenticazione con token JWT
+      summary: Elenco degli ordini di un cliente
+      tags: [Clienti]
+      parameters:
+        - in: path
+          name: idUtente
+          required: true
+          schema:
+            type: integer
+          description: ID dell'utente di cui ottenere gli ordini.
+      responses:
+        '200':
+          description: Elenco degli ordini del cliente restituito con successo.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ordine'
+
+#specifica di tutti i modelli di dati utilizzati nelle richieste e risposte
+components:
+  schemas:
+    ################################
+    Utente:
+      type: object
+      properties:
+        idUtente:
+          type: integer
+          example: 1
+        nome:
+          type: string
+          example: "Mario"
+        cognome:
+          type: string
+          example: "Rossi"
+        email:
+          type: string
+          format: email
+          example: "mario@email.it"
+        password:
+          type: string
+          format: password
+          example: "password123"
+        ruolo:
+          type: string
+          enum: ["proprietario", "personale", "cliente"]
+          example: "cliente"
+        telefono:
+          type: string
+          example: "3331234567"
+        via:
+          type: string
+          example: "Via Roma"
+        civico:
+          type: string
+          example: "12"
+        citta:
+          type: string
+          example: "L'Aquila"
+    ################################
+    Personale:
+      type: object
+      properties:
+        idPersonale:
+          type: integer
+          example: 1
+        idUtente:
+          type: integer
+          example: 10
+        nome:
+          type: string
+          example: "Luigi"
+        cognome:
+          type: string
+          example: "Verdi"
+    ################################
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "maikol@esempio.it"
+        password:
+          type: string
+          format: password
+          example: "password123"
+    ################################
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Token JWT da utilizzare per autenticarsi nelle richieste successive.
+        utente:
+          type: object
+          properties:
+            idUtente:
+              type: integer
+              example: 1
+            nome:
+              type: string
+              example: "Maikol"
+            ruolo:
+              type: string
+              enum: ["proprietario", "personale", "cliente"]
+              example: "cliente"
+    #################################à
+    GruppoMutuaEsclusione:
+      type: object
+      properties:
+        idGmc:
+          type: integer
+          example: 1
+        nome:
+          type: string
+          example: "Scelta Cottura"
+        descrizione:
+          type: string
+          example: "Seleziona come preferisci la carne"
+    #################################à
+    Caratteristica:
+      type: object
+      properties:
+        idCaratteristica:
+          type: integer
+          example: 1
+        nome:
+          type: string
+          example: "Piccante"
+        differenzaPrezzo:
+          type: number
+          format: float
+          example: -0.50
+        isDefault:
+          type: boolean
+          example: false
+        idGmc:
+          type: integer
+          example: 2
+        gruppo:
+          type: string
+          description: Il nome del gruppo di caratteristiche in mutua esclusione se presente
+          example: "Zucchero"
+    #############################################
+    Prodotto:
+      type: object
+      properties:
+        idProdotto:
+          type: integer
+          example: 1
+        categoria:
+          type: string
+          example: "Pizza"
+        nome:
+          type: string
+          example: "Pizza Margherita"
+        descrizione:
+          type: string
+          example: "Pizza con pomodoro, mozzarella e basilico."
+        prezzoBase:
+          type: number
+          format: float
+          example: 5.99
+        immagine:
+          type: string
+          example: "http://localhost:8080/Fooody/images/pizza_margherita.jpg"
+        tempoPreparazione:
+          type: integer
+          description: Tempo di preparazione stimato in minuti
+          example: 15
+        procedura:
+          type: string
+          description: Procedura di preparazione del prodotto necessaria alla cucina.
+          example: "1. Stendere la pasta. 2. Aggiungere il pomodoro. 3. Aggiungere la mozzarella. 4. Cuocere in forno per 15 minuti."
+        caratteristiche:
+          type: array
+          items:
+            $ref: '#/components/schemas/Caratteristica'
+    #############################################
+    Ingrediente:
+      type: object
+      properties:
+        idIngrediente:
+          type: integer
+          example: 1
+        nome:
+          type: string
+          example: "Pomodoro"
+        quantita:
+          type: string
+          example: "100g"
+    #############################################
+    Ordine:
+      type: object
+      properties:
+        idOrdine:
+          type: integer
+          example: 1
+        timeInserimento:
+          type: string
+          format: date-time
+          example: "2024-06-01T12:30:00Z"
+        OrarioConsegnaRichiesto:
+          type: string
+          format: date-time
+          example: "2024-06-01T13:30:00Z"
+        statoCorrente:
+          type: string
+          enum: ["inserito", "in preparazione", "pronto", "in consegna", "consegnato", "annullato"]
+          example: "in preparazione"
+        prezzoTotale:
+          type: number
+          format: float
+          example: 25.50
+    #############################################
+    NuovoOrdineRequest:
+      type: object
+      properties:
+        idCliente:
+          type: integer
+          example: 1
+        orarioConsegnaRichiesto:
+          type: string
+          format: date-time
+          example: "2026-06-29 20:30:00"
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/NuovoDettaglioRequest'
+    #############################################
+    NuovoDettaglioRequest:
+      type: object
+      properties:
+        idProdotto:
+          type: integer
+          example: 1
+        quantita:
+          type: integer
+          example: 2
+        caratteristicheScelte:
+          type: array
+          items:
+            type: integer
+          example: [1, 3]
+    #############################################
+    DettaglioProdotto:
+      type: object
+      properties:
+        idDettaglio:
+          type: integer
+          example: 1
+        nomeProdotto:
+          type: string
+          example: "Pizza Margherita"
+        quantita:
+          type: integer
+          example: 2
+        caratteristiche:
+          type: array
+          items:
+            type: string
+          example: ["Senza zucchero", "Con panna"]
+        tempoPreparazione:
+          type: integer
+          description: Tempo di preparazione stimato in minuti per questo prodotto con le caratteristiche scelte
+          example: 20
+        procedura:
+          type: string
+          description: Procedura di preparazione del prodotto necessaria alla cucina, comprensiva delle caratteristiche scelte.
+          example: "1. Stendere la pasta. 2. Aggiungere il pomodoro. 3. Aggiungere la mozzarella. 4. Cuocere in forno per 20 minuti."
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Utilizza un token JWT per autenticarsi nelle richieste alle risorse protette. Il token deve essere incluso nell'header Authorization con il prefisso "Bearer".

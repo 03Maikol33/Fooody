@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <!-- ============================================================ -->
+    <!-- AUTH FILTER – Protegge le rotte che richiedono login         -->
+    <!-- ============================================================ -->
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>it.maikol.fooodyweb.controllers.AuthFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <!-- Rotte cliente protette -->
+        <url-pattern>/profile</url-pattern>
+        <url-pattern>/cart</url-pattern>
+        <url-pattern>/orders</url-pattern>
+        <!-- Rotte proprietario protette -->
+        <url-pattern>/owner-orders</url-pattern>
+        <url-pattern>/owner-menu</url-pattern>
+        <url-pattern>/owner-characteristics</url-pattern>
+        <url-pattern>/owner-ingredients</url-pattern>
+        <url-pattern>/owner-staff</url-pattern>
+        <!-- Rotte staff protette -->
+        <url-pattern>/staff-orders</url-pattern>
+    </filter-mapping>
+
+    <!-- ============================================================ -->
+    <!-- SERVLET DI FRAMEWORK (Tomcat Embedded)                       -->
+    <!-- ============================================================ -->
+    <servlet>
+        <servlet-name>Shutdown</servlet-name>
+        <servlet-class>it.univaq.f4i.iw.framework.tomcat.ShutdownServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Shutdown</servlet-name>
+        <url-pattern>/shutdown</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Diagnostic</servlet-name>
+        <servlet-class>it.univaq.f4i.iw.framework.tomcat.DiagnosticServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Diagnostic</servlet-name>
+        <url-pattern>/diagnostic</url-pattern>
+    </servlet-mapping>
+
+    <!-- ============================================================ -->
+    <!-- CONTROLLER PUBBLICI                                          -->
+    <!-- ============================================================ -->
+
+    <!-- Index / Home -->
+    <servlet>
+        <servlet-name>IndexController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.IndexController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>IndexController</servlet-name>
+        <url-pattern>/index</url-pattern>
+    </servlet-mapping>
+
+    <!-- Menu -->
+    <servlet>
+        <servlet-name>MenuController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.MenuController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MenuController</servlet-name>
+        <url-pattern>/menu</url-pattern>
+    </servlet-mapping>
+
+    <!-- Login -->
+    <servlet>
+        <servlet-name>LoginController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.LoginController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LoginController</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+
+    <!-- Register -->
+    <servlet>
+        <servlet-name>RegisterController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.RegisterController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RegisterController</servlet-name>
+        <url-pattern>/register</url-pattern>
+    </servlet-mapping>
+
+    <!-- Logout -->
+    <servlet>
+        <servlet-name>LogoutController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.LogoutController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LogoutController</servlet-name>
+        <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+
+    <!-- ============================================================ -->
+    <!-- CONTROLLER CLIENTE                                           -->
+    <!-- ============================================================ -->
+
+    <!-- Profilo utente -->
+    <servlet>
+        <servlet-name>ProfileController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.ProfileController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProfileController</servlet-name>
+        <url-pattern>/profile</url-pattern>
+    </servlet-mapping>
+
+    <!-- Carrello -->
+    <servlet>
+        <servlet-name>CartController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.CartController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CartController</servlet-name>
+        <url-pattern>/cart</url-pattern>
+    </servlet-mapping>
+
+    <!-- I miei Ordini -->
+    <servlet>
+        <servlet-name>OrdersController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.OrdersController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>OrdersController</servlet-name>
+        <url-pattern>/orders</url-pattern>
+    </servlet-mapping>
+
+    <!-- ============================================================ -->
+    <!-- CONTROLLER PROPRIETARIO                                      -->
+    <!-- ============================================================ -->
+
+    <!-- Dashboard ordini proprietario -->
+    <servlet>
+        <servlet-name>OwnerOrdersController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.OwnerOrdersController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>OwnerOrdersController</servlet-name>
+        <url-pattern>/owner-orders</url-pattern>
+    </servlet-mapping>
+
+    <!-- Gestione menu proprietario -->
+    <servlet>
+        <servlet-name>OwnerMenuController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.OwnerMenuController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>OwnerMenuController</servlet-name>
+        <url-pattern>/owner-menu</url-pattern>
+    </servlet-mapping>
+
+    <!-- Gestione staff proprietario -->
+    <servlet>
+        <servlet-name>OwnerStaffController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.OwnerStaffController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>OwnerStaffController</servlet-name>
+        <url-pattern>/owner-staff</url-pattern>
+    </servlet-mapping>
+
+    <!-- Gestione caratteristiche e GMC proprietario -->
+    <servlet>
+        <servlet-name>OwnerCharacteristicsController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.OwnerCharacteristicsController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>OwnerCharacteristicsController</servlet-name>
+        <url-pattern>/owner-characteristics</url-pattern>
+    </servlet-mapping>
+
+    <!-- Gestione ingredienti proprietario -->
+    <servlet>
+        <servlet-name>OwnerIngredientsController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.OwnerIngredientsController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>OwnerIngredientsController</servlet-name>
+        <url-pattern>/owner-ingredients</url-pattern>
+    </servlet-mapping>
+
+    <!-- ============================================================ -->
+    <!-- CONTROLLER STAFF                                             -->
+    <!-- ============================================================ -->
+
+    <!-- Dashboard ordini staff -->
+    <servlet>
+        <servlet-name>StaffOrdersController</servlet-name>
+        <servlet-class>it.maikol.fooodyweb.controllers.StaffOrdersController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>StaffOrdersController</servlet-name>
+        <url-pattern>/staff-orders</url-pattern>
+    </servlet-mapping>
+
+    <!-- ============================================================ -->
+    <!-- CONFIGURAZIONE SESSIONE                                      -->
+    <!-- ============================================================ -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+    <!-- Pagina di benvenuto -->
+    <welcome-file-list>
+        <welcome-file>index</welcome-file>
+    </welcome-file-list>
+
+</web-app>

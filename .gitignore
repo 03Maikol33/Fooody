@@ -1,0 +1,28 @@
+
+api/target/
+webapp/target/
+webapp/logs/
+
+# file di build file temporanei e file di classe
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.tmp
+temp/
+
+# Esclude file di configurazione degli IDE
+.idea/
+.settings/
+.vscode/
+.classpath
+.project
+.DS_Store
+
+
+*.properties
+*.bak
+.env
+secret.json
+config/local/
