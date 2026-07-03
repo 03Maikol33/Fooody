@@ -14,9 +14,9 @@ Il progetto è organizzato in un'architettura Maven:
 
 Per una consultazione dettagliata delle specifiche tecniche, dell'architettura e delle scelte progettuali, si rimanda ai seguenti documenti:
 
-* [Documentazione Web Engineering (SWA)](https://www.google.com/search?q=documentazione%2520e%2520database/Documentazione-SWA-Gasparroni.md): Analisi dettagliata dei requisiti, diagrammi ER e relazionale, e scelte architetturali.
-* [Documentazione Web Engineering (WE)](https://www.google.com/search?q=documentazione%2520e%2520database/Documentazione-WE-Gasparroni.md): Analisi delle funzionalità, layout del sito e test di validazione.
-* [Specifiche API (OpenAPI)](https://www.google.com/search?q=documentazione%2520e%2520database/openapi.md): Documentazione tecnica completa degli endpoint REST, payload e codici di stato HTTP.
+* [Documentazione Web Engineering (SWA)](https://github.com/03Maikol33/Fooody/blob/main/documentazione%20e%20database/Documentazione-SWA-Gasparroni.md): Analisi dettagliata dei requisiti, diagrammi ER e relazionale, e scelte architetturali.
+* [Documentazione Web Engineering (WE)](https://github.com/03Maikol33/Fooody/blob/main/documentazione%20e%20database/Documentazione-WE-Gasparroni.md): Analisi delle funzionalità, layout del sito e test di validazione.
+* [Specifiche API (OpenAPI)](https://github.com/03Maikol33/Fooody/blob/main/documentazione%20e%20database/openapi.md): Documentazione tecnica completa degli endpoint REST, payload e codici di stato HTTP.
 
 ## Prerequisiti
 
