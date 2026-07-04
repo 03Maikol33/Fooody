@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package IngredienteResource;
+package it.maikol.fooody.resources;
 import it.maikol.fooody.dao.IngredienteDAO;
 import it.maikol.fooody.models.Ingrediente;
 import it.maikol.fooody.security.Secured;
@@ -22,7 +22,7 @@ import jakarta.ws.rs.core.Response;
  * @author Maikol
  */
 @Path("/ingredienti")
-public class java {
+public class IngredienteResource {
     
     /**
      * Ottieni tutti gli ingredienti esistenti
