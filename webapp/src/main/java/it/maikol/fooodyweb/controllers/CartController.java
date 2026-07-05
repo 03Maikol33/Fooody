@@ -1,12 +1,5 @@
 package it.maikol.fooodyweb.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import it.maikol.fooodyweb.models.CartItem;
-import it.maikol.fooodyweb.models.Utente;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -19,6 +12,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.maikol.fooodyweb.models.CartItem;
+import it.maikol.fooodyweb.models.Ordine;
+import it.maikol.fooodyweb.models.Utente;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Controller per il Carrello e conferma Ordine.
@@ -213,7 +218,7 @@ public class CartController extends BaseController {
 
             HttpClient client = HttpClient.newHttpClient();
             ObjectMapper mapper = new ObjectMapper();
-            mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
             if (utente.getIdCliente() == null || utente.getIdCliente() == 0) {
                 try {
@@ -223,8 +228,8 @@ public class CartController extends BaseController {
                             .GET().build();
                     HttpResponse<String> discoverRes = client.send(discoverReq, HttpResponse.BodyHandlers.ofString());
                     if (discoverRes.statusCode() == 200) {
-                        List<it.maikol.fooodyweb.models.Ordine> pastOrders = mapper.readValue(discoverRes.body(), new com.fasterxml.jackson.core.type.TypeReference<List<it.maikol.fooodyweb.models.Ordine>>() {});
-                        for (it.maikol.fooodyweb.models.Ordine po : pastOrders) {
+                        List<Ordine> pastOrders = mapper.readValue(discoverRes.body(), new TypeReference<List<Ordine>>() {});
+                        for (Ordine po : pastOrders) {
                             if (po.getIdCliente() > 0) {
                                 utente.setIdCliente(po.getIdCliente());
                                 session.setAttribute("utente", utente);

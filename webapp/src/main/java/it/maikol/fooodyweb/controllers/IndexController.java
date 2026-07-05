@@ -5,6 +5,7 @@
 package it.maikol.fooodyweb.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.maikol.fooodyweb.models.Prodotto;
 import jakarta.servlet.annotation.WebServlet;
@@ -48,7 +49,7 @@ public class IndexController extends BaseController{
             if (apiResponse.statusCode() == 200) {
                 ObjectMapper mapper = new ObjectMapper();
                 
-                mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 
                 prodottiAnteprima = mapper.readValue(apiResponse.body(), new TypeReference<List<Prodotto>>(){});
                 String token = (session != null) ? (String) session.getAttribute("tokenJWT") : null;

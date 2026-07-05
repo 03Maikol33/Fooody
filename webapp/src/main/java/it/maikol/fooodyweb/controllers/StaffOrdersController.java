@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -53,7 +55,7 @@ public class StaffOrdersController extends BaseController {
 
         String filtroStato = request.getParameter("filtro");
         String filtroDataParam = request.getParameter("dataInserimento");
-        String filtroData = (filtroDataParam != null) ? filtroDataParam : java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE);
+        String filtroData = (filtroDataParam != null) ? filtroDataParam : LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
         data.put("filtroStato", filtroStato != null ? filtroStato : "all");
         data.put("filtroData", filtroData);
 

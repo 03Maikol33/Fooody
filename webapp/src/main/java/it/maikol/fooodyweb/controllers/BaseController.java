@@ -3,14 +3,28 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package it.maikol.fooodyweb.controllers;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
+import it.maikol.fooodyweb.models.Ingrediente;
+import it.maikol.fooodyweb.models.Prodotto;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Map;
 /**
  *
  * @author Maikol
@@ -27,7 +41,7 @@ public class BaseController extends HttpServlet{
             
             String templatePath = getServletContext().getRealPath("/WEB-INF/templates");
             
-            freemarkerConfig.setDirectoryForTemplateLoading(new java.io.File(templatePath));
+            freemarkerConfig.setDirectoryForTemplateLoading(new File(templatePath));
             
         } catch (IOException e) {
             throw new ServletException("Impossibile configurare la cartella dei template FreeMarker", e);
@@ -57,29 +71,29 @@ public class BaseController extends HttpServlet{
     /**
      * Metodo di supporto per popola la lista degli ingredienti per i prodotti dal server API
      */
-    protected void popolaIngredienti(java.util.List<it.maikol.fooodyweb.models.Prodotto> prodotti, String token) {
+    protected void popolaIngredienti(List<Prodotto> prodotti, String token) {
         if (prodotti == null || prodotti.isEmpty()) return;
         try {
-            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            for (it.maikol.fooodyweb.models.Prodotto p : prodotti) {
+            HttpClient client = HttpClient.newHttpClient();
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            for (Prodotto p : prodotti) {
                 try {
-                    java.net.http.HttpRequest.Builder reqBuilder = java.net.http.HttpRequest.newBuilder()
-                            .uri(java.net.URI.create("http://localhost:8080/Fooody/api/prodotti/" + p.getIdProdotto() + "/ingredienti"))
+                    HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                            .uri(URI.create("http://localhost:8080/Fooody/api/prodotti/" + p.getIdProdotto() + "/ingredienti"))
                             .GET();
                     if (token != null && !token.isBlank()) {
                         reqBuilder.header("Authorization", "Bearer " + token);
                     }
-                    java.net.http.HttpResponse<String> res = client.send(reqBuilder.build(), java.net.http.HttpResponse.BodyHandlers.ofString());
+                    HttpResponse<String> res = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
                     if (res.statusCode() == 200) {
-                        java.util.List<it.maikol.fooodyweb.models.Ingrediente> ingList = mapper.readValue(res.body(), new com.fasterxml.jackson.core.type.TypeReference<java.util.List<it.maikol.fooodyweb.models.Ingrediente>>() {});
+                        List<Ingrediente> ingList = mapper.readValue(res.body(), new TypeReference<List<Ingrediente>>() {});
                         p.setIngredienti(ingList);
                     } else {
-                        p.setIngredienti(new java.util.ArrayList<>());
+                        p.setIngredienti(new ArrayList<>());
                     }
                 } catch (Exception ex) {
-                    p.setIngredienti(new java.util.ArrayList<>());
+                    p.setIngredienti(new ArrayList<>());
                 }
             }
         } catch (Exception e) {

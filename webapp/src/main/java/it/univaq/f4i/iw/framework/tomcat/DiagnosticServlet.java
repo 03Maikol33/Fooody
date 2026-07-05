@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -152,8 +153,8 @@ public class DiagnosticServlet extends HttpServlet {
             printTable(out, "Session Information", "Property Name", "Property Value",
                     Map.ofEntries(
                             makeMapEntry("Session ID", session.getId()),
-                            makeMapEntry("Creation Time", (new java.util.Date(session.getCreationTime()).toString())),
-                            makeMapEntry("Last Accessed Time", (new java.util.Date(session.getLastAccessedTime()).toString())),
+                            makeMapEntry("Creation Time", (new Date(session.getCreationTime()).toString())),
+                            makeMapEntry("Last Accessed Time", (new Date(session.getLastAccessedTime()).toString())),
                             makeMapEntry("Max Inactive Interval", session.getMaxInactiveInterval() + " seconds"),
                             makeMapEntry("Is New", String.valueOf(session.isNew()))
                     ));

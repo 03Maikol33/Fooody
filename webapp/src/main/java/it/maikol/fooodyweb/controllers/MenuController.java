@@ -2,6 +2,7 @@ package it.maikol.fooodyweb.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.maikol.fooodyweb.models.CartItem;
 import it.maikol.fooodyweb.models.Prodotto;
@@ -62,9 +63,9 @@ public class MenuController extends BaseController {
             HttpResponse<String> catResponse = client.send(catRequest, HttpResponse.BodyHandlers.ofString());
             if (catResponse.statusCode() == 200) {
                 ObjectMapper mapper = new ObjectMapper();
-                com.fasterxml.jackson.databind.JsonNode rootNode = mapper.readTree(catResponse.body());
+                JsonNode rootNode = mapper.readTree(catResponse.body());
                 if (rootNode != null && rootNode.isArray()) {
-                    for (com.fasterxml.jackson.databind.JsonNode node : rootNode) {
+                    for (JsonNode node : rootNode) {
                         String cat = null;
                         if (node.isTextual()) {
                             cat = node.asText();

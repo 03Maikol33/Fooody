@@ -2,9 +2,11 @@ package it.maikol.fooodyweb.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.maikol.fooodyweb.models.Caratteristica;
 import it.maikol.fooodyweb.models.GruppoGmc;
+import it.maikol.fooodyweb.models.Ingrediente;
 import it.maikol.fooodyweb.models.Prodotto;
 import it.maikol.fooodyweb.models.Utente;
 import jakarta.servlet.ServletException;
@@ -78,9 +80,9 @@ public class OwnerMenuController extends BaseController {
                         .GET().build();
                 HttpResponse<String> catRes = client.send(catReq, HttpResponse.BodyHandlers.ofString());
                 if (catRes.statusCode() == 200) {
-                    com.fasterxml.jackson.databind.JsonNode rootNode = mapper.readTree(catRes.body());
+                    JsonNode rootNode = mapper.readTree(catRes.body());
                     if (rootNode != null && rootNode.isArray()) {
-                        for (com.fasterxml.jackson.databind.JsonNode node : rootNode) {
+                        for (JsonNode node : rootNode) {
                             String cat = null;
                             if (node.isTextual()) cat = node.asText();
                             else if (node.isObject()) {
@@ -126,7 +128,7 @@ public class OwnerMenuController extends BaseController {
                     caratteristiche = mapper.readValue(cRes.body(), new TypeReference<List<Caratteristica>>() {});
                 }
             } catch (Exception ex) {}
-            List<it.maikol.fooodyweb.models.Ingrediente> tuttiIng = new ArrayList<>();
+            List<Ingrediente> tuttiIng = new ArrayList<>();
             try {
                 HttpRequest iReq = HttpRequest.newBuilder()
                         .uri(URI.create(API_BASE + "/ingredienti"))
@@ -134,7 +136,7 @@ public class OwnerMenuController extends BaseController {
                         .GET().build();
                 HttpResponse<String> iRes = client.send(iReq, HttpResponse.BodyHandlers.ofString());
                 if (iRes.statusCode() == 200) {
-                    tuttiIng = mapper.readValue(iRes.body(), new TypeReference<List<it.maikol.fooodyweb.models.Ingrediente>>() {});
+                    tuttiIng = mapper.readValue(iRes.body(), new TypeReference<List<Ingrediente>>() {});
                 }
             } catch (Exception ex) {}
             data.put("tuttiGruppi", gruppi);
